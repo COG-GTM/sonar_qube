@@ -924,6 +924,11 @@ for (const [ns, api] of Object.entries(globalCal.ns)) {
  * Intercepts all postmessages and fires action in corresponding actionManager
  */
 window.addEventListener("message", (e) => {
+  const targetOrigin = WEBAPP_URL;
+  if (e.origin !== targetOrigin) {
+    console.warn("Received message from unauthorized origin:", e.origin);
+    return;
+  }
   const detail = e.data;
   const fullType = detail.fullType;
   const parsedAction = SdkActionManager.parseAction(fullType);

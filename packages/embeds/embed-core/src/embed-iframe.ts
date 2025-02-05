@@ -549,6 +549,10 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
+    if (!verifyOrigin(e.origin)) {
+      console.warn("Received message from unauthorized origin:", e.origin);
+      return;
+    }
     const data: Message = e.data;
     if (!data) {
       return;
