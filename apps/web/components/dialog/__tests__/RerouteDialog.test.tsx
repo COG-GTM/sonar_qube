@@ -12,13 +12,9 @@ const mockRouter = {
   }),
 };
 
-vi.mock("next/navigation", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("next/navigation")>();
-  return {
-    ...actual,
-    useRouter: vi.fn(() => mockRouter),
-  };
-});
+vi.mock("next/navigation", () => ({
+  useRouter: () => mockRouter,
+}));
 
 vi.mock("@calcom/app-store/routing-forms/lib/processRoute", () => ({
   findMatchingRoute: vi.fn(({ form, response }) => {
@@ -243,10 +239,11 @@ async function mockMessageFromOpenedTab({ type, data }: { type: string; data: an
   });
   window.postMessage(
     {
+      originator: "CAL",
       type,
       data,
     },
-    "*"
+    window.location.origin
   );
 
   return messageReceivedPromise;

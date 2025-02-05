@@ -79,7 +79,9 @@ if (embedType === "inline") {
 }
 
 previewWindow.addEventListener("message", (e) => {
-  const data = e.data;
+  const { origin, data } = e;
+  if (!validateMessageOrigin(origin)) return;
+  if (data?.originator !== "CAL") return;
   if (data.mode !== "cal:preview") {
     return;
   }

@@ -10,6 +10,11 @@ import tailwindCss from "./tailwindCss";
 import type { UiConfig } from "./types";
 import { fromEntriesWithDuplicateKeys } from "./utils";
 
+/**
+ * Intercepts all postmessages and fires action in corresponding actionManager
+ */
+import { validateMessageOrigin } from "./utils/validateOrigin";
+
 export type { PrefillAndIframeAttrsConfig } from "./embed-iframe";
 
 // Exporting for consumption by @calcom/embed-core user
@@ -338,11 +343,10 @@ export class Cal {
       throw new Error("iframe doesn't exist. `createIframe` must be called before `doInIframe`");
     }
     if (this.iframe.contentWindow) {
-      // TODO: Ensure that targetOrigin is as defined by user(and not *). Generally it would be cal.com but in case of self hosting it can be anything.
-      // Maybe we can derive targetOrigin from __config.origin
+      const targetOrigin = new URL(this.iframe.src).origin;
       this.iframe.contentWindow.postMessage(
         { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
-        "*"
+        targetOrigin
       );
     }
   }
@@ -919,11 +923,11 @@ for (const [ns, api] of Object.entries(globalCal.ns)) {
   api.instance = api.instance ?? new Cal(ns, api.q);
 }
 
-/**
- * Intercepts all postmessages and fires action in corresponding actionManager
- */
 window.addEventListener("message", (e) => {
-  const detail = e.data;
+  const { origin, data: detail } = e;
+  if (!validateMessageOrigin(origin)) return;
+  if (detail?.originator !== "CAL") return;
+
   const fullType = detail.fullType;
   const parsedAction = SdkActionManager.parseAction(fullType);
   if (!parsedAction) {

@@ -679,19 +679,25 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
   };
 
   const previewInstruction = (instruction: { name: string; arg: unknown }) => {
-    iframeRef.current?.contentWindow?.postMessage(
+    if (!iframeRef.current?.contentWindow) return;
+    const targetOrigin = new URL(iframeRef.current.src).origin;
+    iframeRef.current.contentWindow.postMessage(
       {
+        originator: "CAL",
         mode: "cal:preview",
         type: "instruction",
         instruction,
       },
-      "*"
+      targetOrigin
     );
   };
 
   const inlineEmbedDimensionUpdate = ({ width, height }: { width: string; height: string }) => {
-    iframeRef.current?.contentWindow?.postMessage(
+    if (!iframeRef.current?.contentWindow) return;
+    const targetOrigin = new URL(iframeRef.current.src).origin;
+    iframeRef.current.contentWindow.postMessage(
       {
+        originator: "CAL",
         mode: "cal:preview",
         type: "inlineEmbedDimensionUpdate",
         data: {
@@ -699,7 +705,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
           height: getDimension(height),
         },
       },
-      "*"
+      targetOrigin
     );
   };
 

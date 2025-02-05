@@ -218,10 +218,13 @@ const useEventListeners = ({ reroutingState }: { reroutingState: ReturnType<type
   const { t } = useLocale();
   const messageListener = useCallback(
     (event: MessageEvent) => {
-      if (event.data.type !== "CAL:rescheduleBookingSuccessfulV2") {
+      const { origin, data } = event;
+      if (!validateMessageOrigin(origin)) return;
+      if (data?.originator !== "CAL") return;
+      if (data.type !== "CAL:rescheduleBookingSuccessfulV2") {
         return;
       }
-      const calEventData = event.data.data;
+      const calEventData = data.data;
       showToast(t("rerouted_booking_successfully_redirecting_to_booking_page"), "success");
       if (!calEventData.uid) {
         console.error("Booking UID is not there");
@@ -235,7 +238,7 @@ const useEventListeners = ({ reroutingState }: { reroutingState: ReturnType<type
       gotoBookingPage({ router, booking: { uid: newBookingId } });
       reroutingState.value?.reschedulerWindow?.close();
     },
-    [reroutingState, reroutingState.value?.reschedulerWindow]
+    [reroutingState, router, t]
   );
 
   // Make sure to close the rescheduler window when this tab closes/reloads

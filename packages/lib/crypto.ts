@@ -1,42 +1,25 @@
 import crypto from "crypto";
 
-const ALGORITHM = "aes256";
-const INPUT_ENCODING = "utf8";
-const OUTPUT_ENCODING = "hex";
-const IV_LENGTH = 16; // AES blocksize
+const ALGORITHM = "aes-256-gcm";
+const IV_LENGTH = 12;
+const _AUTH_TAG_LENGTH = 16;
 
-/**
- *
- * @param text Value to be encrypted
- * @param key Key used to encrypt value must be 32 bytes for AES256 encryption algorithm
- *
- * @returns Encrypted value using key
- */
 export const symmetricEncrypt = function (text: string, key: string) {
-  const _key = Buffer.from(key, "latin1");
+  const _key = crypto.scryptSync(key, "salt", 32);
   const iv = crypto.randomBytes(IV_LENGTH);
-
   const cipher = crypto.createCipheriv(ALGORITHM, _key, iv);
-  let ciphered = cipher.update(text, INPUT_ENCODING, OUTPUT_ENCODING);
-  ciphered += cipher.final(OUTPUT_ENCODING);
-  const ciphertext = `${iv.toString(OUTPUT_ENCODING)}:${ciphered}`;
-
-  return ciphertext;
+  const encrypted = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return `${iv.toString("hex")}:${encrypted.toString("hex")}:${authTag.toString("hex")}`;
 };
 
-/**
- *
- * @param text Value to decrypt
- * @param key Key used to decrypt value must be 32 bytes for AES256 encryption algorithm
- */
-export const symmetricDecrypt = function (text: string, key: string) {
-  const _key = Buffer.from(key, "latin1");
-
-  const components = text.split(":");
-  const iv_from_ciphertext = Buffer.from(components.shift() || "", OUTPUT_ENCODING);
-  const decipher = crypto.createDecipheriv(ALGORITHM, _key, iv_from_ciphertext);
-  let deciphered = decipher.update(components.join(":"), OUTPUT_ENCODING, INPUT_ENCODING);
-  deciphered += decipher.final(INPUT_ENCODING);
-
-  return deciphered;
+export const symmetricDecrypt = function (ciphertext: string, key: string) {
+  const [ivHex, encryptedHex, authTagHex] = ciphertext.split(":");
+  const _key = crypto.scryptSync(key, "salt", 32);
+  const iv = Buffer.from(ivHex, "hex");
+  const encrypted = Buffer.from(encryptedHex, "hex");
+  const authTag = Buffer.from(authTagHex, "hex");
+  const decipher = crypto.createDecipheriv(ALGORITHM, _key, iv);
+  decipher.setAuthTag(authTag);
+  return decipher.update(encrypted) + decipher.final("utf8");
 };

@@ -7,6 +7,7 @@ import type { Message } from "./embed";
 import { sdkActionManager } from "./sdk-event";
 import type { EmbedThemeConfig, UiConfig, EmbedNonStylesConfig, BookerLayouts, EmbedStyles } from "./types";
 import { useCompatSearchParams } from "./useCompatSearchParams";
+import { validateMessageOrigin } from "./utils/validateOrigin";
 
 type SetStyles = React.Dispatch<React.SetStateAction<EmbedStyles>>;
 type setNonStylesConfig = React.Dispatch<React.SetStateAction<EmbedNonStylesConfig>>;
@@ -424,12 +425,14 @@ export type InterfaceWithParent = {
 export const interfaceWithParent: InterfaceWithParent = methods;
 
 const messageParent = (data: CustomEvent["detail"]) => {
+  if (!parent) return;
+  const calOrigin = window.location.origin;
   parent.postMessage(
     {
       originator: "CAL",
       ...data,
     },
-    "*"
+    calOrigin
   );
 };
 
@@ -535,10 +538,11 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
-    const data: Message = e.data;
+    const { origin, data }: { origin: string; data: Message } = e;
     if (!data) {
       return;
     }
+    if (!validateMessageOrigin(origin)) return;
     const method: keyof typeof interfaceWithParent = data.method;
     if (data.originator === "CAL" && typeof method === "string") {
       interfaceWithParent[method]?.(data.arg as never);
