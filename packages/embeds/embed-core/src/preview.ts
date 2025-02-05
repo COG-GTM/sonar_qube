@@ -78,7 +78,13 @@ if (embedType === "inline") {
   document.body.appendChild(button);
 }
 
+const allowedOrigin = bookerUrl;
+
 previewWindow.addEventListener("message", (e) => {
+  if (e.origin !== allowedOrigin) {
+    console.warn("Received message from unauthorized origin:", e.origin);
+    return;
+  }
   const data = e.data;
   if (data.mode !== "cal:preview") {
     return;

@@ -8,6 +8,8 @@ import { sdkActionManager } from "./sdk-event";
 import type { EmbedThemeConfig, UiConfig, EmbedNonStylesConfig, BookerLayouts, EmbedStyles } from "./types";
 import { useCompatSearchParams } from "./useCompatSearchParams";
 
+const WEBAPP_URL = process.env.EMBED_PUBLIC_WEBAPP_URL || `https://${process.env.EMBED_PUBLIC_VERCEL_URL}`;
+
 type SetStyles = React.Dispatch<React.SetStateAction<EmbedStyles>>;
 type setNonStylesConfig = React.Dispatch<React.SetStateAction<EmbedNonStylesConfig>>;
 const enum EMBED_IFRAME_STATE {
@@ -49,6 +51,11 @@ declare global {
  * This is in-memory persistence needed so that when user browses through the embed, the configurations from the instructions aren't lost.
  */
 const embedStore = {
+  getInitConfig() {
+    return {
+      calOrigin: WEBAPP_URL,
+    };
+  },
   // Handles the commands of routing received from parent even when React hasn't initialized and nextRouter isn't available
   router: {
     setNextRouter(nextRouter: ReturnType<typeof useRouter>) {
@@ -423,13 +430,20 @@ export type InterfaceWithParent = {
 
 export const interfaceWithParent: InterfaceWithParent = methods;
 
+function verifyOrigin(origin: string) {
+  const embedConfig = embedStore.getInitConfig();
+  const allowedOrigin = embedConfig.calOrigin || WEBAPP_URL;
+  return origin === allowedOrigin;
+}
+
 const messageParent = (data: CustomEvent["detail"]) => {
+  const targetOrigin = embedStore.getInitConfig().calOrigin || WEBAPP_URL;
   parent.postMessage(
     {
       originator: "CAL",
       ...data,
     },
-    "*"
+    targetOrigin
   );
 };
 
