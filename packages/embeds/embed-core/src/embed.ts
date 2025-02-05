@@ -9,6 +9,7 @@ import type { EventData, EventDataMap } from "./sdk-action-manager";
 import tailwindCss from "./tailwindCss";
 import type { UiConfig } from "./types";
 import { fromEntriesWithDuplicateKeys } from "./utils";
+import { validateOrigin } from "./utils/origin-validation";
 
 export type { PrefillAndIframeAttrsConfig } from "./embed-iframe";
 
@@ -338,11 +339,10 @@ export class Cal {
       throw new Error("iframe doesn't exist. `createIframe` must be called before `doInIframe`");
     }
     if (this.iframe.contentWindow) {
-      // TODO: Ensure that targetOrigin is as defined by user(and not *). Generally it would be cal.com but in case of self hosting it can be anything.
-      // Maybe we can derive targetOrigin from __config.origin
+      const targetOrigin = this.__config.calOrigin || "https://app.cal.com";
       this.iframe.contentWindow.postMessage(
         { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
-        "*"
+        targetOrigin
       );
     }
   }
@@ -927,6 +927,12 @@ window.addEventListener("message", (e) => {
   const fullType = detail.fullType;
   const parsedAction = SdkActionManager.parseAction(fullType);
   if (!parsedAction) {
+    return;
+  }
+
+  // Validate message origin using the utility
+  if (!validateOrigin(e.origin)) {
+    console.warn("Message received from unauthorized origin:", e.origin);
     return;
   }
 

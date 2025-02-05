@@ -7,6 +7,7 @@ import type { Message } from "./embed";
 import { sdkActionManager } from "./sdk-event";
 import type { EmbedThemeConfig, UiConfig, EmbedNonStylesConfig, BookerLayouts, EmbedStyles } from "./types";
 import { useCompatSearchParams } from "./useCompatSearchParams";
+import { validateOrigin } from "./utils/origin-validation";
 
 type SetStyles = React.Dispatch<React.SetStateAction<EmbedStyles>>;
 type setNonStylesConfig = React.Dispatch<React.SetStateAction<EmbedNonStylesConfig>>;
@@ -539,6 +540,13 @@ function main() {
     if (!data) {
       return;
     }
+
+    // Validate message origin
+    if (!validateOrigin(e.origin)) {
+      console.warn("Message received from unauthorized origin:", e.origin);
+      return;
+    }
+
     const method: keyof typeof interfaceWithParent = data.method;
     if (data.originator === "CAL" && typeof method === "string") {
       interfaceWithParent[method]?.(data.arg as never);
