@@ -423,13 +423,16 @@ export type InterfaceWithParent = {
 
 export const interfaceWithParent: InterfaceWithParent = methods;
 
+import { verifyMessageOrigin } from "@calcom/lib/security";
+
 const messageParent = (data: CustomEvent["detail"]) => {
+  const targetOrigin = embedStore.__config?.calOrigin || "*";
   parent.postMessage(
     {
       originator: "CAL",
       ...data,
     },
-    "*"
+    targetOrigin
   );
 };
 
@@ -535,6 +538,8 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
+    if (!verifyMessageOrigin(e.origin)) return;
+    
     const data: Message = e.data;
     if (!data) {
       return;

@@ -78,7 +78,11 @@ if (embedType === "inline") {
   document.body.appendChild(button);
 }
 
+import { verifyMessageOrigin } from "@calcom/lib/security";
+
 previewWindow.addEventListener("message", (e) => {
+  if (!verifyMessageOrigin(e.origin)) return;
+  
   const data = e.data;
   if (data.mode !== "cal:preview") {
     return;

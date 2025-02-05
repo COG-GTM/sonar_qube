@@ -9,6 +9,7 @@ import { components } from "react-select";
 import { shallow } from "zustand/shallow";
 
 import type { Dayjs } from "@calcom/dayjs";
+import { getTargetOrigin } from "@calcom/lib/security";
 import dayjs from "@calcom/dayjs";
 import { AvailableTimes, AvailableTimesHeader } from "@calcom/features/bookings";
 import { useBookerStore, useInitializeBookerStore } from "@calcom/features/bookings/Booker/store";
@@ -685,7 +686,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
         type: "instruction",
         instruction,
       },
-      "*"
+      getTargetOrigin()
     );
   };
 
@@ -699,7 +700,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
           height: getDimension(height),
         },
       },
-      "*"
+      getTargetOrigin()
     );
   };
 
