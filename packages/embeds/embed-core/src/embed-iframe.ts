@@ -543,8 +543,9 @@ function main() {
       return;
     }
     if (!validateMessageOrigin(origin)) return;
+    if (data?.originator !== "CAL") return;
     const method: keyof typeof interfaceWithParent = data.method;
-    if (data.originator === "CAL" && typeof method === "string") {
+    if (typeof method === "string") {
       interfaceWithParent[method]?.(data.arg as never);
     }
   });

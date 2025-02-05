@@ -1,3 +1,5 @@
+import { validateMessageOrigin } from "./utils/validateOrigin";
+
 const searchParams = new URL(document.URL).searchParams;
 const embedType = searchParams.get("embedType");
 const calLink = searchParams.get("calLink");
