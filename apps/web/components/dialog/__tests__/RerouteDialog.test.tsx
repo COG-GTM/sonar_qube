@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { RouteActionType } from "@calcom/app-store/routing-forms/zod";
+import { WEBAPP_URL } from "@calcom/lib/constants";
+import { sendSafeMessage } from "@calcom/lib/postMessage";
 import { BookingStatus, SchedulingType } from "@calcom/prisma/enums";
 
 import { RerouteDialog } from "../RerouteDialog";
@@ -241,12 +243,13 @@ async function mockMessageFromOpenedTab({ type, data }: { type: string; data: an
       resolve(true);
     });
   });
-  window.postMessage(
+  sendSafeMessage(
+    window,
     {
       type,
       data,
     },
-    "*"
+    WEBAPP_URL
   );
 
   return messageReceivedPromise;

@@ -340,9 +340,10 @@ export class Cal {
     if (this.iframe.contentWindow) {
       // TODO: Ensure that targetOrigin is as defined by user(and not *). Generally it would be cal.com but in case of self hosting it can be anything.
       // Maybe we can derive targetOrigin from __config.origin
-      this.iframe.contentWindow.postMessage(
+      sendSafeMessage(
+        this.iframe.contentWindow,
         { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
-        "*"
+        WEBAPP_URL
       );
     }
   }
@@ -923,6 +924,7 @@ for (const [ns, api] of Object.entries(globalCal.ns)) {
  * Intercepts all postmessages and fires action in corresponding actionManager
  */
 window.addEventListener("message", (e) => {
+  if (!validateOrigin(e.origin, [WEBAPP_URL])) return;
   const detail = e.data;
   const fullType = detail.fullType;
   const parsedAction = SdkActionManager.parseAction(fullType);
