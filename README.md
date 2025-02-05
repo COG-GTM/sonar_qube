@@ -160,7 +160,7 @@ Here is what you need to be able to run Cal.com.
    nvm install && nvm use
    ```
 
-   You can install nvm from [here](https://github.com/nvm-sh/nvm).
+   You can install nvm from [here](https://github.com/nvm-sh/nvm). This step is crucial for ensuring compatibility with the project's Node.js requirements.
 
 #### Quick start with `yarn dx`
 
