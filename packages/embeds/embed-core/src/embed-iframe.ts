@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
 
-import type { Message } from "./embed";
+import { sendSafeMessage, validateMessageOrigin, messageSchema } from "./lib/safe-postmessage";
 import { sdkActionManager } from "./sdk-event";
 import type { EmbedThemeConfig, UiConfig, EmbedNonStylesConfig, BookerLayouts, EmbedStyles } from "./types";
 import { useCompatSearchParams } from "./useCompatSearchParams";
@@ -424,12 +424,13 @@ export type InterfaceWithParent = {
 export const interfaceWithParent: InterfaceWithParent = methods;
 
 const messageParent = (data: CustomEvent["detail"]) => {
-  parent.postMessage(
+  sendSafeMessage(
+    parent,
     {
       originator: "CAL",
       ...data,
     },
-    "*"
+    "https://cal.com"
   );
 };
 
@@ -535,10 +536,11 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
-    const data: Message = e.data;
-    if (!data) {
-      return;
-    }
+    if (!validateMessageOrigin(e.origin)) return;
+    const parsed = messageSchema.safeParse(e.data);
+    if (!parsed.success) return;
+
+    const data = parsed.data;
     const method: keyof typeof interfaceWithParent = data.method;
     if (data.originator === "CAL" && typeof method === "string") {
       interfaceWithParent[method]?.(data.arg as never);

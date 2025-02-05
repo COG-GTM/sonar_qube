@@ -1,9 +1,10 @@
 import crypto from "crypto";
 
-const ALGORITHM = "aes256";
+const ALGORITHM = "aes-256-gcm";
 const INPUT_ENCODING = "utf8";
 const OUTPUT_ENCODING = "hex";
-const IV_LENGTH = 16; // AES blocksize
+const IV_LENGTH = 12; // GCM recommended IV length
+// GCM auth tag length used in getAuthTag()
 
 /**
  *
@@ -19,7 +20,8 @@ export const symmetricEncrypt = function (text: string, key: string) {
   const cipher = crypto.createCipheriv(ALGORITHM, _key, iv);
   let ciphered = cipher.update(text, INPUT_ENCODING, OUTPUT_ENCODING);
   ciphered += cipher.final(OUTPUT_ENCODING);
-  const ciphertext = `${iv.toString(OUTPUT_ENCODING)}:${ciphered}`;
+  const authTag = cipher.getAuthTag();
+  const ciphertext = `${iv.toString(OUTPUT_ENCODING)}:${authTag.toString(OUTPUT_ENCODING)}:${ciphered}`;
 
   return ciphertext;
 };
@@ -34,7 +36,9 @@ export const symmetricDecrypt = function (text: string, key: string) {
 
   const components = text.split(":");
   const iv_from_ciphertext = Buffer.from(components.shift() || "", OUTPUT_ENCODING);
+  const authTag = Buffer.from(components.shift() || "", OUTPUT_ENCODING);
   const decipher = crypto.createDecipheriv(ALGORITHM, _key, iv_from_ciphertext);
+  decipher.setAuthTag(authTag);
   let deciphered = decipher.update(components.join(":"), OUTPUT_ENCODING, INPUT_ENCODING);
   deciphered += decipher.final(INPUT_ENCODING);
 

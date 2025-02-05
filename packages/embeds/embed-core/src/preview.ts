@@ -1,3 +1,5 @@
+import { validateMessageOrigin, messageSchema } from "./lib/safe-postmessage";
+
 const searchParams = new URL(document.URL).searchParams;
 const embedType = searchParams.get("embedType");
 const calLink = searchParams.get("calLink");
@@ -79,7 +81,11 @@ if (embedType === "inline") {
 }
 
 previewWindow.addEventListener("message", (e) => {
-  const data = e.data;
+  if (!validateMessageOrigin(e.origin)) return;
+  const parsed = messageSchema.safeParse(e.data);
+  if (!parsed.success) return;
+
+  const data = parsed.data;
   if (data.mode !== "cal:preview") {
     return;
   }

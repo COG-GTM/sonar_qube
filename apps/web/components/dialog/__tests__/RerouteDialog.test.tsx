@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { RouteActionType } from "@calcom/app-store/routing-forms/zod";
+import { sendSafeMessage } from "@calcom/lib/safe-postmessage";
 import { BookingStatus, SchedulingType } from "@calcom/prisma/enums";
 
 import { RerouteDialog } from "../RerouteDialog";
@@ -12,17 +13,13 @@ const mockRouter = {
   }),
 };
 
-vi.mock("next/navigation", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("next/navigation")>();
-  return {
-    ...actual,
-    useRouter: vi.fn(() => mockRouter),
-  };
-});
+vi.mock("next/navigation", () => ({
+  useRouter: () => mockRouter,
+}));
 
 vi.mock("@calcom/app-store/routing-forms/lib/processRoute", () => ({
-  findMatchingRoute: vi.fn(({ form, response }) => {
-    return form.routes.find((route: any) => route.__testMatching);
+  findMatchingRoute: vi.fn(({ form }) => {
+    return form.routes.find((route: Record<string, unknown>) => route.__testMatching);
   }),
 }));
 
@@ -241,12 +238,13 @@ async function mockMessageFromOpenedTab({ type, data }: { type: string; data: an
       resolve(true);
     });
   });
-  window.postMessage(
+  sendSafeMessage(
+    window,
     {
       type,
       data,
     },
-    "*"
+    "https://cal.com"
   );
 
   return messageReceivedPromise;
@@ -307,7 +305,7 @@ const mockBooking = {
   status: BookingStatus.ACCEPTED, // Add this line
 };
 
-const buildBooking = () => {
+const _buildBooking = () => {
   return {
     ...mockBooking,
   };

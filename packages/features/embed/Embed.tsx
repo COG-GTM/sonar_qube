@@ -20,6 +20,7 @@ import { APP_NAME, DEFAULT_LIGHT_BRAND_COLOR, DEFAULT_DARK_BRAND_COLOR } from "@
 import { weekdayToWeekIndex } from "@calcom/lib/date-fns";
 import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
+import { sendSafeMessage } from "@calcom/lib/safe-postmessage";
 import { BookerLayouts } from "@calcom/prisma/zod-utils";
 import type { RouterOutputs } from "@calcom/trpc/react";
 import { trpc } from "@calcom/trpc/react";
@@ -679,28 +680,34 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
   };
 
   const previewInstruction = (instruction: { name: string; arg: unknown }) => {
-    iframeRef.current?.contentWindow?.postMessage(
-      {
-        mode: "cal:preview",
-        type: "instruction",
-        instruction,
-      },
-      "*"
-    );
+    if (iframeRef.current?.contentWindow) {
+      sendSafeMessage(
+        iframeRef.current.contentWindow,
+        {
+          mode: "cal:preview",
+          type: "instruction",
+          instruction,
+        },
+        "https://cal.com"
+      );
+    }
   };
 
   const inlineEmbedDimensionUpdate = ({ width, height }: { width: string; height: string }) => {
-    iframeRef.current?.contentWindow?.postMessage(
-      {
-        mode: "cal:preview",
-        type: "inlineEmbedDimensionUpdate",
-        data: {
-          width: getDimension(width),
-          height: getDimension(height),
+    if (iframeRef.current?.contentWindow) {
+      sendSafeMessage(
+        iframeRef.current.contentWindow,
+        {
+          mode: "cal:preview",
+          type: "inlineEmbedDimensionUpdate",
+          data: {
+            width: getDimension(width),
+            height: getDimension(height),
+          },
         },
-      },
-      "*"
-    );
+        "https://cal.com"
+      );
+    }
   };
 
   previewInstruction({
