@@ -1,3 +1,5 @@
+import { verifyPostMessageOrigin } from "../../../lib/postMessage";
+
 const searchParams = new URL(document.URL).searchParams;
 const embedType = searchParams.get("embedType");
 const calLink = searchParams.get("calLink");
@@ -79,6 +81,7 @@ if (embedType === "inline") {
 }
 
 previewWindow.addEventListener("message", (e) => {
+  if (!verifyPostMessageOrigin(e.origin)) return;
   const data = e.data;
   if (data.mode !== "cal:preview") {
     return;

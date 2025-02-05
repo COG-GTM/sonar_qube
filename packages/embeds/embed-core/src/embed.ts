@@ -1,4 +1,5 @@
 /// <reference types="../env" />
+import { sendSafeMessage, verifyPostMessageOrigin } from "../../../lib/postMessage";
 import { FloatingButton } from "./FloatingButton/FloatingButton";
 import { Inline } from "./Inline/inline";
 import { ModalBox } from "./ModalBox/ModalBox";
@@ -340,10 +341,11 @@ export class Cal {
     if (this.iframe.contentWindow) {
       // TODO: Ensure that targetOrigin is as defined by user(and not *). Generally it would be cal.com but in case of self hosting it can be anything.
       // Maybe we can derive targetOrigin from __config.origin
-      this.iframe.contentWindow.postMessage(
-        { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
-        "*"
-      );
+      sendSafeMessage(this.iframe.contentWindow, {
+        originator: "CAL",
+        method: doInIframeArg.method,
+        arg: doInIframeArg.arg,
+      });
     }
   }
 
@@ -923,6 +925,7 @@ for (const [ns, api] of Object.entries(globalCal.ns)) {
  * Intercepts all postmessages and fires action in corresponding actionManager
  */
 window.addEventListener("message", (e) => {
+  if (!verifyPostMessageOrigin(e.origin)) return;
   const detail = e.data;
   const fullType = detail.fullType;
   const parsedAction = SdkActionManager.parseAction(fullType);

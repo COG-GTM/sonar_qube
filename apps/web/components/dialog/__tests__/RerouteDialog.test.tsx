@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { RouteActionType } from "@calcom/app-store/routing-forms/zod";
+import { sendSafeMessage } from "@calcom/lib/postMessage";
 import { BookingStatus, SchedulingType } from "@calcom/prisma/enums";
 
 import { RerouteDialog } from "../RerouteDialog";
@@ -235,19 +236,16 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
-async function mockMessageFromOpenedTab({ type, data }: { type: string; data: any }) {
+async function mockMessageFromOpenedTab({ type, data }: { type: string; data: Record<string, unknown> }) {
   const messageReceivedPromise = new Promise<boolean>((resolve) => {
     window.addEventListener("message", () => {
       resolve(true);
     });
   });
-  window.postMessage(
-    {
-      type,
-      data,
-    },
-    "*"
-  );
+  sendSafeMessage(window, {
+    type,
+    data,
+  });
 
   return messageReceivedPromise;
 }
@@ -307,7 +305,7 @@ const mockBooking = {
   status: BookingStatus.ACCEPTED, // Add this line
 };
 
-const buildBooking = () => {
+const _buildBooking = () => {
   return {
     ...mockBooking,
   };

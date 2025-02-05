@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
 
+import { sendSafeMessage, verifyPostMessageOrigin } from "../../../lib/postMessage";
 import type { Message } from "./embed";
 import { sdkActionManager } from "./sdk-event";
 import type { EmbedThemeConfig, UiConfig, EmbedNonStylesConfig, BookerLayouts, EmbedStyles } from "./types";
@@ -424,13 +425,10 @@ export type InterfaceWithParent = {
 export const interfaceWithParent: InterfaceWithParent = methods;
 
 const messageParent = (data: CustomEvent["detail"]) => {
-  parent.postMessage(
-    {
-      originator: "CAL",
-      ...data,
-    },
-    "*"
-  );
+  sendSafeMessage(parent, {
+    originator: "CAL",
+    ...data,
+  });
 };
 
 function keepParentInformedAboutDimensionChanges() {
@@ -535,6 +533,7 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
+    if (!verifyPostMessageOrigin(e.origin)) return;
     const data: Message = e.data;
     if (!data) {
       return;
@@ -560,6 +559,7 @@ function main() {
   });
 
   sdkActionManager?.on("*", (e) => {
+    if (!verifyPostMessageOrigin(e.origin)) return;
     const detail = e.detail;
     log(detail);
     messageParent(detail);
