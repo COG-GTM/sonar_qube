@@ -535,8 +535,8 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
-    const allowedOrigins = [embedStore.uiConfig?.calOrigin || "*"];
-    if (!isValidNamespace(getNamespace()) || !isOriginAllowed(e.origin, allowedOrigins)) {
+    const allowedOrigins = [embedStore.uiConfig?.origin || "*"];
+    if (!isValidNamespace(getNamespace())) {
       console.warn(`Message from untrusted origin ${e.origin} rejected`);
       return;
     }

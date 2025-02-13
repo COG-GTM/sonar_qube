@@ -339,7 +339,7 @@ export class Cal {
     }
     if (this.iframe.contentWindow) {
       // TODO: Ensure that targetOrigin is as defined by user(and not *). Generally it would be cal.com but in case of self hosting it can be anything.
-      const targetOrigin = this.cal.__config.calOrigin || "*";
+      const targetOrigin = this.__config.calOrigin || "*";
       this.iframe.contentWindow.postMessage(
         { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
         targetOrigin
