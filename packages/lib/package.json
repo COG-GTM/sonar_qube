@@ -12,6 +12,7 @@
     "lint:report": "eslint . --format json --output-file ../../lint-results/app-store.json"
   },
   "dependencies": {
+    "@calcom/api": "*",
     "@calcom/config": "*",
     "@calcom/dayjs": "*",
     "@formbricks/api": "^1.7.0",

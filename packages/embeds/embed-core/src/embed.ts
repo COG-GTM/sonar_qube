@@ -4,6 +4,7 @@ import { Inline } from "./Inline/inline";
 import { ModalBox } from "./ModalBox/ModalBox";
 import type { InterfaceWithParent, interfaceWithParent, PrefillAndIframeAttrsConfig } from "./embed-iframe";
 import css from "./embed.css";
+import { validatePostMessageOrigin } from "./postMessageValidator";
 import { SdkActionManager } from "./sdk-action-manager";
 import type { EventData, EventDataMap } from "./sdk-action-manager";
 import tailwindCss from "./tailwindCss";
@@ -338,11 +339,10 @@ export class Cal {
       throw new Error("iframe doesn't exist. `createIframe` must be called before `doInIframe`");
     }
     if (this.iframe.contentWindow) {
-      // TODO: Ensure that targetOrigin is as defined by user(and not *). Generally it would be cal.com but in case of self hosting it can be anything.
-      // Maybe we can derive targetOrigin from __config.origin
+      const targetOrigin = this.__config.calOrigin || WEBAPP_URL;
       this.iframe.contentWindow.postMessage(
         { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
-        "*"
+        targetOrigin
       );
     }
   }
@@ -902,6 +902,13 @@ export type GlobalCal = GlobalCalWithNs;
 declare global {
   interface Window {
     Cal: GlobalCal;
+    CalEmbed?: {
+      embedStore?: {
+        __config?: {
+          calOrigin?: string;
+        };
+      };
+    };
   }
 }
 
@@ -923,6 +930,10 @@ for (const [ns, api] of Object.entries(globalCal.ns)) {
  * Intercepts all postmessages and fires action in corresponding actionManager
  */
 window.addEventListener("message", (e) => {
+  if (!validatePostMessageOrigin(e.origin)) {
+    console.error("Unauthorized message origin:", e.origin);
+    return;
+  }
   const detail = e.data;
   const fullType = detail.fullType;
   const parsedAction = SdkActionManager.parseAction(fullType);

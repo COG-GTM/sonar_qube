@@ -18,6 +18,7 @@ import dayjs from "@calcom/dayjs";
 import { createBooking } from "@calcom/features/bookings/lib/create-booking";
 import { useBookerUrl } from "@calcom/lib/hooks/useBookerUrl";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
+import { validatePostMessageOrigin } from "@calcom/lib/postMessageValidator";
 import type { EventType, User, Team, Attendee, Booking as PrismaBooking } from "@calcom/prisma/client";
 import { SchedulingType } from "@calcom/prisma/enums";
 import type { bookingMetadataSchema } from "@calcom/prisma/zod-utils";
@@ -246,10 +247,17 @@ const useEventListeners = ({ reroutingState }: { reroutingState: ReturnType<type
 
   // Ensure listeners are added once the component is mounted and removed once the component is unmounted
   useEffect(() => {
-    window.addEventListener("message", messageListener);
+    const wrappedMessageListener = (e: MessageEvent) => {
+      if (!validatePostMessageOrigin(e.origin)) {
+        console.error("Unauthorized message origin:", e.origin);
+        return;
+      }
+      messageListener(e);
+    };
+    window.addEventListener("message", wrappedMessageListener);
     window.addEventListener("beforeunload", beforeUnloadListener);
     return () => {
-      window.removeEventListener("message", messageListener);
+      window.removeEventListener("message", wrappedMessageListener);
       window.removeEventListener("beforeunload", beforeUnloadListener);
     };
     // messageListener and beforeUnloadListener are memoized using useCallback, so the reference remains stable

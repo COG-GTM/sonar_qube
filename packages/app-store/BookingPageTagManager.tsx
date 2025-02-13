@@ -78,12 +78,14 @@ export function handleEvent(event: { detail: Record<string, unknown> & { type: s
 
   // Support sending all events to opener which is currently used by ReroutingDialog to identify if the booking is successfully rescheduled.
   if (window.opener) {
+    // Use WEBAPP_URL as the target origin since we know the opener is always from the same origin
+    const targetOrigin = window.location.origin;
     window.opener.postMessage(
       {
         type: `CAL:${name}`,
         ...data,
       },
-      "*"
+      targetOrigin
     );
   }
   return true;

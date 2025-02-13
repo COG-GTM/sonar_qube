@@ -1,3 +1,5 @@
+import { validatePostMessageOrigin } from "./postMessageValidator";
+
 const searchParams = new URL(document.URL).searchParams;
 const embedType = searchParams.get("embedType");
 const calLink = searchParams.get("calLink");
@@ -79,6 +81,10 @@ if (embedType === "inline") {
 }
 
 previewWindow.addEventListener("message", (e) => {
+  if (!validatePostMessageOrigin(e.origin)) {
+    console.error("Unauthorized message origin:", e.origin);
+    return;
+  }
   const data = e.data;
   if (data.mode !== "cal:preview") {
     return;

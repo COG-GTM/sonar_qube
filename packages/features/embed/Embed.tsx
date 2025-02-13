@@ -16,7 +16,12 @@ import { useEvent, useScheduleForEvent } from "@calcom/features/bookings/Booker/
 import DatePicker from "@calcom/features/calendars/DatePicker";
 import { useNonEmptyScheduleDays } from "@calcom/features/schedules";
 import { useSlotsForDate } from "@calcom/features/schedules/lib/use-schedule/useSlotsForDate";
-import { APP_NAME, DEFAULT_LIGHT_BRAND_COLOR, DEFAULT_DARK_BRAND_COLOR } from "@calcom/lib/constants";
+import {
+  APP_NAME,
+  DEFAULT_LIGHT_BRAND_COLOR,
+  DEFAULT_DARK_BRAND_COLOR,
+  WEBAPP_URL,
+} from "@calcom/lib/constants";
 import { weekdayToWeekIndex } from "@calcom/lib/date-fns";
 import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
@@ -679,18 +684,22 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
   };
 
   const previewInstruction = (instruction: { name: string; arg: unknown }) => {
-    iframeRef.current?.contentWindow?.postMessage(
+    if (!iframeRef.current?.contentWindow) return;
+    const targetOrigin = WEBAPP_URL;
+    iframeRef.current.contentWindow.postMessage(
       {
         mode: "cal:preview",
         type: "instruction",
         instruction,
       },
-      "*"
+      targetOrigin
     );
   };
 
   const inlineEmbedDimensionUpdate = ({ width, height }: { width: string; height: string }) => {
-    iframeRef.current?.contentWindow?.postMessage(
+    if (!iframeRef.current?.contentWindow) return;
+    const targetOrigin = WEBAPP_URL;
+    iframeRef.current.contentWindow.postMessage(
       {
         mode: "cal:preview",
         type: "inlineEmbedDimensionUpdate",
@@ -699,7 +708,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
           height: getDimension(height),
         },
       },
-      "*"
+      targetOrigin
     );
   };
 

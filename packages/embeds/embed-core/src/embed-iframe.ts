@@ -424,12 +424,15 @@ export type InterfaceWithParent = {
 export const interfaceWithParent: InterfaceWithParent = methods;
 
 const messageParent = (data: CustomEvent["detail"]) => {
+  // Use parent's origin or WEBAPP_URL as fallback
+  const targetOrigin =
+    parent !== window ? document.referrer || window.location.origin : window.location.origin;
   parent.postMessage(
     {
       originator: "CAL",
       ...data,
     },
-    "*"
+    targetOrigin
   );
 };
 

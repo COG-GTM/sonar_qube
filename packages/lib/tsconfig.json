@@ -1,9 +1,14 @@
 {
   "extends": "@calcom/tsconfig/base.json",
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2019",
+    "lib": ["es2019", "DOM"],
     "jsx": "preserve",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": [".", "../types/next-auth.d.ts", "../types/window.d.ts", "../trpc/types/router.d.ts"],
   "exclude": ["dist", "build", "node_modules"]
