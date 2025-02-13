@@ -1,0 +1,134 @@
+---
+title: "예약 API"
+---
+
+# 예약 API
+
+예약 API를 통해 예약을 생성, 조회, 수정, 취소할 수 있습니다.
+
+## 예약 생성
+
+### HTTP 요청
+```http
+POST /v1/bookings
+```
+
+### 요청 본문
+```json
+{
+  "eventTypeId": 1,
+  "start": "2024-02-20T10:00:00.000Z",
+  "end": "2024-02-20T10:30:00.000Z",
+  "responses": {
+    "name": "홍길동",
+    "email": "hong@example.com",
+    "location": {
+      "value": "zoom",
+      "optionValue": ""
+    }
+  },
+  "timeZone": "Asia/Seoul",
+  "language": "ko",
+  "metadata": {}
+}
+```
+
+### 필수 필드
+- eventTypeId: 이벤트 타입 ID
+- start: 시작 시간
+- responses: 참석자 정보
+- timeZone: 시간대
+- language: 언어
+
+## 예약 조회
+
+### HTTP 요청
+```http
+GET /v1/bookings/{id}
+```
+
+### 경로 파라미터
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| id | integer | 예약 ID |
+
+### 응답 예시
+```json
+{
+  "booking": {
+    "id": 1,
+    "userId": 5,
+    "eventTypeId": 7,
+    "title": "30분 미팅",
+    "description": "",
+    "startTime": "2024-02-20T10:00:00.000Z",
+    "endTime": "2024-02-20T10:30:00.000Z",
+    "attendees": [
+      {
+        "email": "hong@example.com",
+        "name": "홍길동",
+        "timeZone": "Asia/Seoul",
+        "language": "ko"
+      }
+    ],
+    "status": "ACCEPTED"
+  }
+}
+```
+
+## 예약 수정
+
+### HTTP 요청
+```http
+PATCH /v1/bookings/{id}
+```
+
+### 요청 본문
+```json
+{
+  "title": "수정된 미팅 제목",
+  "start": "2024-02-20T11:00:00.000Z",
+  "end": "2024-02-20T11:30:00.000Z"
+}
+```
+
+## 예약 취소
+
+### HTTP 요청
+```http
+DELETE /v1/bookings/{id}/cancel
+```
+
+### 쿼리 파라미터
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| cancellationReason | string | 예 | 취소 사유 |
+
+## 녹화본 조회
+
+### HTTP 요청
+```http
+GET /v1/bookings/{id}/recordings
+```
+
+### 응답 예시
+```json
+[
+  {
+    "id": "recording-id",
+    "room_name": "meeting-room",
+    "start_ts": 1645329600,
+    "status": "completed",
+    "duration": 1800,
+    "download_link": "https://example.com/recording"
+  }
+]
+```
+
+## 오류 처리
+| 코드 | 설명 |
+|------|------|
+| 400 | 잘못된 요청 형식 |
+| 401 | 인증 실패 |
+| 404 | 예약을 찾을 수 없음 |
+| 409 | 시간 슬롯 충돌 |

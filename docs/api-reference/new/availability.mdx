@@ -1,0 +1,88 @@
+---
+title: "가용성 API"
+---
+
+# 가용성 API
+
+가용성 API를 통해 사용자나 팀의 예약 가능 시간을 관리할 수 있습니다.
+
+## 가용성 설정 조회
+
+### HTTP 요청
+```http
+GET /v1/availabilities
+```
+
+### 응답 예시
+```json
+{
+  "schedules": [
+    {
+      "id": 1,
+      "name": "근무 시간",
+      "timeZone": "Asia/Seoul",
+      "availability": [
+        {
+          "days": [1, 2, 3, 4, 5],
+          "startTime": "09:00:00",
+          "endTime": "18:00:00"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## 가용성 생성
+
+### HTTP 요청
+```http
+POST /v1/availabilities
+```
+
+### 요청 본문
+```json
+{
+  "scheduleId": 1,
+  "days": [1, 2, 3, 4, 5],
+  "startTime": "09:00:00",
+  "endTime": "18:00:00"
+}
+```
+
+### 필수 필드
+- scheduleId: 스케줄 ID
+- days: 요일 배열 (0: 일요일, 1: 월요일, ...)
+- startTime: 시작 시간
+- endTime: 종료 시간
+
+## 가용성 수정
+
+### HTTP 요청
+```http
+PATCH /v1/availabilities/{id}
+```
+
+### 경로 파라미터
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| id | integer | 가용성 ID |
+
+## 가용성 삭제
+
+### HTTP 요청
+```http
+DELETE /v1/availabilities/{id}
+```
+
+## 오류 코드
+| 코드 | 설명 |
+|------|------|
+| 400 | 잘못된 요청 형식 |
+| 401 | 인증 실패 |
+| 404 | 가용성 설정을 찾을 수 없음 |
+
+## 시간대 관련 주의사항
+- 모든 시간은 ISO 8601 형식을 사용
+- 시간대는 IANA 시간대 데이터베이스 형식 사용
+- 서버는 UTC로 시간을 저장하고 응답

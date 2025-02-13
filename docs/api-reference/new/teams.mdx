@@ -1,0 +1,97 @@
+---
+title: "팀 API"
+---
+
+# 팀 API
+
+팀 API를 통해 팀을 생성하고 관리할 수 있습니다.
+
+## 팀 목록 조회
+
+### HTTP 요청
+```http
+GET /v1/teams
+```
+
+### 응답 예시
+```json
+{
+  "teams": [
+    {
+      "id": 1,
+      "name": "개발팀",
+      "slug": "dev-team",
+      "bio": "개발팀입니다",
+      "logo": "https://example.com/logo.png",
+      "members": [
+        {
+          "id": 101,
+          "name": "홍길동",
+          "email": "hong@example.com",
+          "role": "OWNER"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## 팀 생성
+
+### HTTP 요청
+```http
+POST /v1/teams
+```
+
+### 요청 본문
+```json
+{
+  "name": "마케팅팀",
+  "slug": "marketing",
+  "bio": "마케팅팀입니다"
+}
+```
+
+### 필수 필드
+- name: 팀 이름
+- slug: URL에 사용될 고유 식별자
+
+## 팀 수정
+
+### HTTP 요청
+```http
+PATCH /v1/teams/{teamId}
+```
+
+### 경로 파라미터
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| teamId | integer | 팀 ID |
+
+## 팀원 관리
+
+### 팀원 추가
+```http
+POST /v1/teams/{teamId}/members
+```
+
+### 요청 본문
+```json
+{
+  "email": "member@example.com",
+  "role": "MEMBER"
+}
+```
+
+### 팀원 제거
+```http
+DELETE /v1/teams/{teamId}/members/{memberId}
+```
+
+## 오류 코드
+| 코드 | 설명 |
+|------|------|
+| 400 | 잘못된 요청 |
+| 401 | 인증 실패 |
+| 403 | 권한 없음 |
+| 404 | 팀을 찾을 수 없음 |

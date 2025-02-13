@@ -1,0 +1,59 @@
+---
+title: "인증 가이드"
+---
+
+# Cal.com API 인증 가이드
+
+## API 키 인증 (v1)
+
+### API 키 생성
+1. [Cal.com 대시보드](https://app.cal.com)에 로그인
+2. 설정 > 보안으로 이동
+3. API 키 섹션에서 새 키 생성
+
+### API 키 사용
+모든 API 요청에 `apiKey` 쿼리 파라미터를 포함해야 합니다:
+
+```bash
+curl https://api.cal.com/v1/event-types?apiKey=cal_test_key
+```
+
+## OAuth 인증 (v2)
+
+### 1. API 키 인증
+v2에서도 API 키 인증을 계속 지원합니다. API 키는 보안 설정에서 관리할 수 있습니다.
+
+테스트 모드 키는 `cal_test_` 접두사를, 프로덕션 모드 키는 `cal_live_` 접두사를 사용합니다.
+
+Authorization 헤더를 사용하여 인증:
+```bash
+curl -H 'Authorization: Bearer YOUR_API_KEY' https://api.cal.com/v2/event-types
+```
+
+### 2. Platform OAuth 클라이언트 자격 증명
+다음 작업에 필요:
+- 관리 사용자 관리
+- OAuth 클라이언트 웹훅 생성
+- 관리 사용자 토큰 갱신
+- 팀 관련 엔드포인트
+
+OAuth 클라이언트 자격 증명은 platform 대시보드에서 확인할 수 있습니다.
+
+요청 헤더에 포함해야 할 정보:
+- `x-cal-client-id`: OAuth 클라이언트 ID
+- `x-cal-secret-key`: OAuth 클라이언트 시크릿
+
+### 3. 관리 사용자 액세스 토큰
+관리 사용자 생성 시 액세스 토큰과 리프레시 토큰이 발급됩니다.
+
+토큰 유효 기간:
+- 액세스 토큰: 60분
+- 리프레시 토큰: 1년
+
+토큰 갱신은 리프레시 엔드포인트를 통해 가능합니다.
+
+## 보안 모범 사례
+- API 키와 OAuth 자격 증명을 안전하게 보관
+- 공개 저장소나 클라이언트 측 코드에 키를 포함하지 않기
+- 필요한 최소한의 권한만 부여
+- 정기적으로 키 순환

@@ -1,0 +1,96 @@
+---
+title: "Cal.com API 개요"
+---
+
+# Cal.com API 개요
+
+Cal.com API는 예약 시스템을 프로그래밍 방식으로 관리할 수 있게 해주는 강력한 RESTful API입니다. 현재 v1과 v2 두 가지 버전의 API를 제공하고 있습니다.
+
+## API 버전
+
+### v1 API
+- 기본적인 RESTful API 기능 제공
+- API 키 기반 인증
+- 예약, 이벤트, 사용자 관리 등 핵심 기능
+
+### v2 API
+- 향상된 기능과 보안
+- OAuth 인증 지원
+- Platform 기능 및 조직 관리
+- 팀 관리 기능 강화
+
+## 인증 방식
+
+### API 키 인증 (v1)
+1. [보안 설정](https://app.cal.com/settings/security)에서 API 키 생성
+2. 모든 API 요청의 쿼리 파라미터에 `apiKey` 포함
+
+```bash
+curl https://api.cal.com/v1/event-types?apiKey=cal_test_key
+```
+
+### OAuth 인증 (v2)
+v2 API는 세 가지 인증 방식을 제공합니다:
+1. API 키
+2. Platform OAuth 클라이언트 자격 증명
+3. 관리 사용자 액세스 토큰
+
+자세한 내용은 [인증 가이드](authentication)를 참조하세요.
+
+## 시작하기
+
+### HTTP 클라이언트 설치
+
+**Node.js (axios)**
+```bash
+npm install --save axios
+# 또는
+yarn add axios
+```
+
+**Python (requests)**
+```bash
+pip install --upgrade requests
+```
+
+### 첫 API 요청하기
+이벤트 타입 목록을 조회하는 간단한 예제:
+
+```bash
+curl https://api.cal.com/v1/event-types?apiKey=cal_test_key
+```
+
+## 응답 형식
+모든 API 응답은 JSON 형식으로 반환됩니다.
+
+### 성공 응답 예시
+```json
+{
+  "event_types": [
+    {
+      "id": 1,
+      "title": "30분 미팅",
+      "slug": "30min",
+      "length": 30
+    }
+  ]
+}
+```
+
+### 오류 응답 예시
+```json
+{
+  "message": "Authorization information is missing or invalid."
+}
+```
+
+## 요청 제한
+- API 요청은 분당 100회로 제한됩니다.
+- 초과 시 429 상태 코드가 반환됩니다.
+
+## API 문서 구성
+- [인증 가이드](authentication)
+- [이벤트 타입 API](event-types)
+- [예약 API](bookings)
+- [팀 관리 API](teams)
+- [가용성 관리 API](availability)
