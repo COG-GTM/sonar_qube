@@ -342,7 +342,7 @@ export class Cal {
       // Maybe we can derive targetOrigin from __config.origin
       this.iframe.contentWindow.postMessage(
         { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
-        "*"
+        this.__config.calOrigin
       );
     }
   }
