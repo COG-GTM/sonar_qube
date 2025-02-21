@@ -424,12 +424,13 @@ export type InterfaceWithParent = {
 export const interfaceWithParent: InterfaceWithParent = methods;
 
 const messageParent = (data: CustomEvent["detail"]) => {
-  parent.postMessage(
+  sendSafeMessage(
+    parent,
     {
       originator: "CAL",
       ...data,
     },
-    "*"
+    WEBAPP_URL
   );
 };
 
@@ -535,6 +536,7 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
+    if (!validateOrigin(e.origin, [WEBAPP_URL])) return;
     const data: Message = e.data;
     if (!data) {
       return;
