@@ -6,19 +6,19 @@ import { BookingStatus, SchedulingType } from "@calcom/prisma/enums";
 
 import { RerouteDialog } from "../RerouteDialog";
 
+// Mock environment variables for tests
+process.env.EMBED_PUBLIC_WEBAPP_URL = "https://app.cal.com";
+process.env.EMBED_PUBLIC_VERCEL_URL = "app.cal.com";
+
 const mockRouter = {
   push: vi.fn((path: string) => {
     return;
   }),
 };
 
-vi.mock("next/navigation", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("next/navigation")>();
-  return {
-    ...actual,
-    useRouter: vi.fn(() => mockRouter),
-  };
-});
+vi.mock("next/navigation", () => ({
+  useRouter: () => mockRouter,
+}));
 
 vi.mock("@calcom/app-store/routing-forms/lib/processRoute", () => ({
   findMatchingRoute: vi.fn(({ form, response }) => {
@@ -246,7 +246,7 @@ async function mockMessageFromOpenedTab({ type, data }: { type: string; data: an
       type,
       data,
     },
-    "*"
+    process.env.EMBED_PUBLIC_WEBAPP_URL || `https://${process.env.EMBED_PUBLIC_VERCEL_URL}`
   );
 
   return messageReceivedPromise;

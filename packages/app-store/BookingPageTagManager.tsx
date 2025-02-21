@@ -8,6 +8,9 @@ import type { AppMeta } from "@calcom/types/App";
 
 import type { appDataSchemas } from "./apps.schemas.generated";
 
+// Import environment variables for postMessage origin security
+const WEBAPP_URL = process.env.EMBED_PUBLIC_WEBAPP_URL || `https://${process.env.EMBED_PUBLIC_VERCEL_URL}`;
+
 const PushEventPrefix = "cal_analytics_app_";
 
 // AnalyticApp has appData.tag always set
@@ -83,7 +86,7 @@ export function handleEvent(event: { detail: Record<string, unknown> & { type: s
         type: `CAL:${name}`,
         ...data,
       },
-      "*"
+      WEBAPP_URL
     );
   }
   return true;
