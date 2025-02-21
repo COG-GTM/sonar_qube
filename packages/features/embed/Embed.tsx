@@ -45,6 +45,9 @@ import { buildCssVarsPerTheme } from "./lib/buildCssVarsPerTheme";
 import { getDimension } from "./lib/getDimension";
 import type { EmbedTabs, EmbedType, EmbedTypes, PreviewState } from "./types";
 
+// Import environment variables for postMessage origin security
+const WEBAPP_URL = process.env.EMBED_PUBLIC_WEBAPP_URL || `https://${process.env.EMBED_PUBLIC_VERCEL_URL}`;
+
 type EventType = RouterOutputs["viewer"]["eventTypes"]["get"]["eventType"] | undefined;
 type EmbedDialogProps = {
   types: EmbedTypes;
@@ -685,7 +688,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
         type: "instruction",
         instruction,
       },
-      "*"
+      WEBAPP_URL
     );
   };
 
@@ -699,7 +702,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
           height: getDimension(height),
         },
       },
-      "*"
+      WEBAPP_URL
     );
   };
 
