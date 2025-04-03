@@ -679,17 +679,21 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
   };
 
   const previewInstruction = (instruction: { name: string; arg: unknown }) => {
+    const targetOrigin = window.location.origin;
+
     iframeRef.current?.contentWindow?.postMessage(
       {
         mode: "cal:preview",
         type: "instruction",
         instruction,
       },
-      "*"
+      targetOrigin
     );
   };
 
   const inlineEmbedDimensionUpdate = ({ width, height }: { width: string; height: string }) => {
+    const targetOrigin = window.location.origin;
+
     iframeRef.current?.contentWindow?.postMessage(
       {
         mode: "cal:preview",
@@ -699,7 +703,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
           height: getDimension(height),
         },
       },
-      "*"
+      targetOrigin
     );
   };
 

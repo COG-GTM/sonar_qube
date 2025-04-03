@@ -923,6 +923,15 @@ for (const [ns, api] of Object.entries(globalCal.ns)) {
  * Intercepts all postmessages and fires action in corresponding actionManager
  */
 window.addEventListener("message", (e) => {
+  const allowedOrigins = [window.location.origin];
+  if (globalCal.__config?.calOrigin) {
+    allowedOrigins.push(globalCal.__config.calOrigin);
+  }
+
+  if (!allowedOrigins.includes(e.origin)) {
+    return;
+  }
+
   const detail = e.data;
   const fullType = detail.fullType;
   const parsedAction = SdkActionManager.parseAction(fullType);

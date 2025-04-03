@@ -241,12 +241,14 @@ async function mockMessageFromOpenedTab({ type, data }: { type: string; data: an
       resolve(true);
     });
   });
+  const targetOrigin = window.location.origin;
+
   window.postMessage(
     {
       type,
       data,
     },
-    "*"
+    targetOrigin
   );
 
   return messageReceivedPromise;
