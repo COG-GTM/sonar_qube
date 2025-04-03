@@ -246,7 +246,7 @@ async function mockMessageFromOpenedTab({ type, data }: { type: string; data: an
       type,
       data,
     },
-    "*"
+    window.location.origin
   );
 
   return messageReceivedPromise;

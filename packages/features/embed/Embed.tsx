@@ -685,7 +685,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
         type: "instruction",
         instruction,
       },
-      "*"
+      window.location.origin
     );
   };
 
@@ -699,7 +699,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
           height: getDimension(height),
         },
       },
-      "*"
+      window.location.origin
     );
   };
 
