@@ -960,6 +960,7 @@ document.addEventListener("click", (e) => {
   try {
     config = JSON.parse(configString);
   } catch (e) {
+    console.error("Failed to parse config string:", e);
     config = {};
   }
 
