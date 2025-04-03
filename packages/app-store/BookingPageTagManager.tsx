@@ -83,7 +83,7 @@ export function handleEvent(event: { detail: Record<string, unknown> & { type: s
         type: `CAL:${name}`,
         ...data,
       },
-      "*"
+      window.location.origin
     );
   }
   return true;

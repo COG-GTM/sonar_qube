@@ -342,7 +342,7 @@ export class Cal {
       // Maybe we can derive targetOrigin from __config.origin
       this.iframe.contentWindow.postMessage(
         { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
-        "*"
+        this.__config.origin || window.location.origin
       );
     }
   }
@@ -923,6 +923,9 @@ for (const [ns, api] of Object.entries(globalCal.ns)) {
  * Intercepts all postmessages and fires action in corresponding actionManager
  */
 window.addEventListener("message", (e) => {
+  const allowedOrigins = [window.location.origin]; // Add other trusted origins if needed
+  if (!allowedOrigins.includes(e.origin)) return;
+
   const detail = e.data;
   const fullType = detail.fullType;
   const parsedAction = SdkActionManager.parseAction(fullType);

@@ -429,7 +429,7 @@ const messageParent = (data: CustomEvent["detail"]) => {
       originator: "CAL",
       ...data,
     },
-    "*"
+    parent.location.origin
   );
 };
 
@@ -535,6 +535,9 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
+    const parentOrigin = parent.location.origin;
+    if (e.origin !== parentOrigin) return;
+
     const data: Message = e.data;
     if (!data) {
       return;
