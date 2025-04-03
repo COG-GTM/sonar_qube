@@ -36,10 +36,10 @@ if (!bookerUrl || !embedLibUrl) {
         const namespace = ar[1];
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
-        api.q = api.q || [];
+        api.q = api.q ?? [];
         if (typeof namespace === "string") {
           // Make sure that even after re-execution of the snippet, the namespace is not overridden
-          cal.ns[namespace] = cal.ns[namespace] || api;
+          cal.ns[namespace] = cal.ns[namespace] ?? api;
           p(cal.ns[namespace], ar);
           p(cal, ["initNamespace", namespace]);
         } else p(cal, ar);

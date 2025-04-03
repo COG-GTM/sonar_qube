@@ -24,7 +24,7 @@ export type Message = {
 };
 // HACK: Redefine and don't import WEBAPP_URL as it causes import statement to be present in built file.
 // This is happening because we are not able to generate an App and a lib using single Vite Config.
-const WEBAPP_URL = process.env.EMBED_PUBLIC_WEBAPP_URL || `https://${process.env.EMBED_PUBLIC_VERCEL_URL}`;
+const WEBAPP_URL = process.env.EMBED_PUBLIC_WEBAPP_URL ?? `https://${process.env.EMBED_PUBLIC_VERCEL_URL}`;
 
 customElements.define("cal-modal-box", ModalBox);
 customElements.define("cal-floating-button", FloatingButton);
@@ -342,7 +342,7 @@ export class Cal {
       // Maybe we can derive targetOrigin from __config.origin
       this.iframe.contentWindow.postMessage(
         { originator: "CAL", method: doInIframeArg.method, arg: doInIframeArg.arg },
-        this.__config.origin || window.location.origin
+        this.__config.origin ?? window.location.origin
       );
     }
   }
@@ -703,11 +703,10 @@ class CalApi {
     config.embedType = "modal";
     let iframe = null;
 
-    if (!iframe) {
-      iframe = this.cal.createIframe({
+    iframe ??= this.cal.createIframe({
         calLink,
         config: configWithGuestKeyAndColorScheme,
-        calOrigin: calOrigin || null,
+        calOrigin: calOrigin ?? null,
       });
     }
 
@@ -934,7 +933,7 @@ window.addEventListener("message", (e) => {
   }
 
   const actionManager = Cal.actionsManagers[parsedAction.ns];
-  globalCal.__logQueue = globalCal.__logQueue || [];
+  globalCal.__logQueue = globalCal.__logQueue ?? [];
   globalCal.__logQueue.push({ ...parsedAction, data: detail.data });
 
   if (!actionManager) {
@@ -955,8 +954,8 @@ document.addEventListener("click", (e) => {
   }
 
   const namespace = calLinkEl.dataset.calNamespace;
-  const configString = calLinkEl.dataset.calConfig || "";
-  const calOrigin = calLinkEl.dataset.calOrigin || "";
+  const configString = calLinkEl.dataset.calConfig ?? "";
+  const calOrigin = calLinkEl.dataset.calOrigin ?? "";
   let config;
   try {
     config = JSON.parse(configString);
