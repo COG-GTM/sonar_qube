@@ -123,7 +123,7 @@ export default function BookingPageTagManager({
         const pushEventScript = getPushEventScript({ tag, appId });
         return tag.scripts.concat(pushEventScript ? [pushEventScript] : []).map((script, index) => {
           const parsedAttributes: NonNullable<(typeof tag.scripts)[number]["attrs"]> = {};
-          const attrs = script.attrs || {};
+          const attrs = script.attrs ?? {};
           Object.entries(attrs).forEach(([name, value]) => {
             if (typeof value === "string") {
               value = parseValue(value);
@@ -141,7 +141,7 @@ export default function BookingPageTagManager({
               // And we don't want it to error here anyways
               // eslint-disable-next-line react/no-danger
               dangerouslySetInnerHTML={{
-                __html: parseValue(script.content) || "",
+                __html: parseValue(script.content) ?? "",
               }}
               {...parsedAttributes}
               defer

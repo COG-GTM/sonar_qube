@@ -824,7 +824,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
                             value={previewState.inline.width}
                             onChange={(e) => {
                               setPreviewState((previewState) => {
-                                const width = e.target.value || "100%";
+                                const width = e.target.value ?? "100%";
 
                                 return {
                                   ...previewState,
@@ -845,7 +845,7 @@ const EmbedTypeCodeAndPreviewDialogContent = ({
                           value={previewState.inline.height}
                           required
                           onChange={(e) => {
-                            const height = e.target.value || "100%";
+                            const height = e.target.value ?? "100%";
 
                             setPreviewState((previewState) => {
                               return {
@@ -1221,8 +1221,8 @@ export const EmbedDialog = ({
   defaultBrandColor,
 }: EmbedDialogProps) => {
   const searchParams = useCompatSearchParams();
-  const embedUrl = (searchParams?.get("embedUrl") || "") as string;
-  const namespace = (searchParams?.get("namespace") || "") as string;
+  const embedUrl = (searchParams?.get("embedUrl") ?? "") as string;
+  const namespace = (searchParams?.get("namespace") ?? "") as string;
   return (
     <Dialog name="embed" clearQueryParamsOnClose={queryParamsForDialog}>
       {!searchParams?.get("embedType") ? (
