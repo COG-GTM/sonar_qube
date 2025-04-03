@@ -703,7 +703,7 @@ class CalApi {
     config.embedType = "modal";
     let iframe = null;
 
-    iframe ??= this.cal.createIframe({
+    iframe = iframe ?? this.cal.createIframe({
         calLink,
         config: configWithGuestKeyAndColorScheme,
         calOrigin: calOrigin ?? null,
