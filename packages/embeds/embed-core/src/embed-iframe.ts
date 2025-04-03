@@ -424,12 +424,14 @@ export type InterfaceWithParent = {
 export const interfaceWithParent: InterfaceWithParent = methods;
 
 const messageParent = (data: CustomEvent["detail"]) => {
+  const parentOrigin = document.referrer ? new URL(document.referrer).origin : window.location.origin;
+
   parent.postMessage(
     {
       originator: "CAL",
       ...data,
     },
-    "*"
+    parentOrigin
   );
 };
 
@@ -535,6 +537,11 @@ function main() {
   }
 
   window.addEventListener("message", (e) => {
+    const parentOrigin = document.referrer ? new URL(document.referrer).origin : window.location.origin;
+    if (e.origin !== parentOrigin) {
+      return;
+    }
+
     const data: Message = e.data;
     if (!data) {
       return;
