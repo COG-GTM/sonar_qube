@@ -39,7 +39,18 @@ jobs:
           # Ensure coverage directory exists
           mkdir -p coverage
 
+      - name: Check SonarQube Configuration
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ] || [ -z "${{ secrets.SONAR_HOST_URL }}" ]; then
+            echo "⚠️ SonarQube secrets not configured. Skipping analysis."
+            echo "Required secrets: SONAR_TOKEN, SONAR_HOST_URL"
+            echo "Please configure these in repository settings to enable SonarQube analysis."
+            exit 0
+          fi
+          echo "✅ SonarQube configuration found. Proceeding with analysis."
+
       - name: SonarQube Scanner
+        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
         uses: sonarsource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,6 +59,7 @@ jobs:
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
+        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
         uses: sonarqube-quality-gate-action@master
         timeout-minutes: 5
         env:
@@ -55,6 +67,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: Quality Gate Status
+        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
         run: |
           echo "Quality Gate Status: ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
           if [ "${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}" != "PASSED" ]; then
