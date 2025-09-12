@@ -41,16 +41,21 @@ jobs:
 
       - name: Check SonarQube Configuration
         run: |
-          if [ -z "${{ secrets.SONAR_TOKEN }}" ] || [ -z "${{ secrets.SONAR_HOST_URL }}" ]; then
+          if [ -z "$SONAR_TOKEN" ] || [ -z "$SONAR_HOST_URL" ]; then
             echo "⚠️ SonarQube secrets not configured. Skipping analysis."
             echo "Required secrets: SONAR_TOKEN, SONAR_HOST_URL"
             echo "Please configure these in repository settings to enable SonarQube analysis."
-            exit 0
+            echo "SKIP_SONAR=true" >> $GITHUB_ENV
+          else
+            echo "✅ SonarQube configuration found. Proceeding with analysis."
+            echo "SKIP_SONAR=false" >> $GITHUB_ENV
           fi
-          echo "✅ SonarQube configuration found. Proceeding with analysis."
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: SonarQube Scanner
-        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
+        if: env.SKIP_SONAR == 'false'
         uses: sonarsource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,7 +64,7 @@ jobs:
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
-        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
+        if: env.SKIP_SONAR == 'false'
         uses: sonarqube-quality-gate-action@master
         timeout-minutes: 5
         env:
@@ -67,7 +72,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: Quality Gate Status
-        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
+        if: env.SKIP_SONAR == 'false'
         run: |
           echo "Quality Gate Status: ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
           if [ "${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}" != "PASSED" ]; then
