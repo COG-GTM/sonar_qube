@@ -39,15 +39,6 @@ jobs:
           # Ensure coverage directory exists
           mkdir -p coverage
 
-      - name: SonarQube Scan
-        uses: sonarqube-quality-gate-action@master
-        with:
-          scanMetadataReportFile: target/sonar/report-task.txt
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
       - name: SonarQube Scanner
         uses: sonarsource/sonarqube-scan-action@master
         env:
