@@ -38,6 +38,7 @@
    <a href="https://github.com/calcom/cal.com/issues?q=is:issue+is:open+label:%22%F0%9F%99%8B%F0%9F%8F%BB%E2%80%8D%E2%99%82%EF%B8%8Fhelp+wanted%22"><img src="https://img.shields.io/badge/Help%20Wanted-Contribute-blue"></a>
    <a href="https://cal.com/figma"><img src="https://img.shields.io/badge/Figma-Design%20System-blueviolet"></a>
    <a href="https://contributor-covenant.org/version/1/4/code-of-conduct/ "><img src="https://img.shields.io/badge/Contributor%20Covenant-1.4-purple" /></a>
+   <a href="https://sonarcloud.io/summary/new_code?id=COG-GTM_sonar_qube"><img src="https://sonarcloud.io/api/project_badges/measure?project=COG-GTM_sonar_qube&metric=alert_status" alt="Quality Gate Status" /></a>
    <a href="https://console.algora.io/org/cal/bounties?status=open"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fconsole.algora.io%2Fapi%2Fshields%2Fcal%2Fbounties%3Fstatus%3Dopen" /></a>
 </p>
 
@@ -366,6 +367,30 @@ Executable doesn't exist at /Users/alice/Library/Caches/ms-playwright/chromium-1
    ```
 
 1. Enjoy the new version.
+
+## Code Quality
+
+This project uses SonarQube for continuous code quality analysis. The quality gate enforces standards on new code:
+
+- **Coverage**: ≥80% on new code
+- **Duplicated Lines**: ≤3% on new code  
+- **Maintainability/Reliability/Security**: A rating required
+- **No new blocker or critical issues**
+
+### Running Code Analysis Locally
+
+```bash
+# Run tests with coverage
+yarn test --coverage
+
+# The coverage report will be generated in ./coverage/
+# SonarQube will automatically pick up coverage/lcov.info
+```
+
+### Suppression Policy
+
+Before suppressing SonarQube issues, please review our [Suppression Policy](docs/sonar-suppression-policy.md). Always prefer fixing issues over suppressing them.
+
 <!-- DEPLOYMENT -->
 
 ## Deployment
