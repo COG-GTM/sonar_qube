@@ -47,6 +47,8 @@ const ServerPage = async ({ searchParams }: PageProps) => {
           ? "SAML (like Okta)"
           : "your original login method";
       return t("account_managed_by_identity_provider_error", { provider: providerName });
+    } else if (error === "domain-not-allowed") {
+      return t("domain_not_allowed_signin_message");
     }
     return t("error_during_login") + (error ? ` Error code: ${error}` : "");
   };

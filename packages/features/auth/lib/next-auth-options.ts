@@ -17,6 +17,7 @@ import createUsersAndConnectToOrg from "@calcom/features/ee/dsync/lib/users/crea
 import ImpersonationProvider from "@calcom/features/ee/impersonation/lib/ImpersonationProvider";
 import { getOrgFullOrigin, subdomainSuffix } from "@calcom/features/ee/organizations/lib/orgDomains";
 import { clientSecretVerifier, hostedCal, isSAMLLoginEnabled } from "@calcom/features/ee/sso/lib/saml";
+import { validateUserDomainForSSO } from "@calcom/features/ee/sso/lib/sso";
 import { checkRateLimitAndThrowError } from "@calcom/lib/checkRateLimitAndThrowError";
 import {
   GOOGLE_CALENDAR_SCOPES,
@@ -783,6 +784,17 @@ export const getOptions = ({
         if (!user.email_verified) {
           log.error("Attention: SAML/Google User email is not verified in the IdP", safeStringify({ user }));
           return "/auth/error?error=unverified-email";
+        }
+
+        if (idP === IdentityProvider.SAML || idP === IdentityProvider.GOOGLE) {
+          const isDomainAllowed = await validateUserDomainForSSO(user.email);
+          if (!isDomainAllowed) {
+            log.error(
+              "SSO login rejected: user domain not allowed",
+              safeStringify({ email: user.email, provider: account.provider })
+            );
+            return "/auth/error?error=domain-not-allowed";
+          }
         }
 
         let existingUser = await prisma.user.findFirst({

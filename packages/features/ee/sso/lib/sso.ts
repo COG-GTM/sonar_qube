@@ -23,6 +23,18 @@ const getAllAcceptedMemberships = async ({ prisma, email }: { prisma: PrismaClie
   });
 };
 
+export const validateUserDomainForSSO = async (email: string): Promise<boolean> => {
+  const domain = email.split("@")[1];
+
+  const organization = await OrganizationRepository.getVerifiedOrganizationByAutoAcceptEmailDomain(domain);
+
+  if (!organization) {
+    return false;
+  }
+
+  return true;
+};
+
 export const ssoTenantProduct = async (prisma: PrismaClient, email: string) => {
   const { connectionController } = await jackson();
 
