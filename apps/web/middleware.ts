@@ -18,6 +18,14 @@ const safeGet = async <T = any>(key: string): Promise<T | undefined> => {
 export const POST_METHODS_ALLOWED_API_ROUTES = ["/api/auth/signup", "/api/trpc/"];
 export function checkPostMethod(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
+
+  if (pathname.includes("..") || pathname.includes("//")) {
+    return new NextResponse(null, {
+      status: 400,
+      statusText: "Bad Request",
+    });
+  }
+
   if (!POST_METHODS_ALLOWED_API_ROUTES.some((route) => pathname.startsWith(route)) && req.method === "POST") {
     return new NextResponse(null, {
       status: 405,
@@ -87,13 +95,23 @@ const middleware = async (req: NextRequest): Promise<NextResponse<unknown>> => {
     requestHeaders.set("x-csp-enforce", "true");
   }
 
+  requestHeaders.set("X-Content-Type-Options", "nosniff");
+  requestHeaders.set("X-Frame-Options", "DENY");
+  requestHeaders.set("X-XSS-Protection", "1; mode=block");
+  requestHeaders.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
   if (url.pathname.startsWith("/apps/installed")) {
     const returnTo = req.cookies.get("return-to");
 
     if (returnTo?.value) {
-      const response = NextResponse.redirect(new URL(returnTo.value, req.url), { headers: requestHeaders });
-      response.cookies.delete("return-to");
-      return response;
+      try {
+        const redirectUrl = new URL(returnTo.value, req.url);
+        if (redirectUrl.origin === new URL(req.url).origin) {
+          const response = NextResponse.redirect(redirectUrl, { headers: requestHeaders });
+          response.cookies.delete("return-to");
+          return response;
+        }
+      } catch (error) {}
     }
   }
 

@@ -10,12 +10,10 @@ import { isAdminGuard } from "../utils/isAdmin";
 import { isLockedOrBlocked } from "../utils/isLockedOrBlocked";
 import { ScopeOfAdmin } from "../utils/scopeOfAdmin";
 
-// Used to check if the apiKey is not expired, could be extracted if reused. but not for now.
+// Used to check if the apiKey is expired, could be extracted if reused. but not for now.
 export const dateNotInPast = function (date: Date) {
   const now = new Date();
-  if (now.setHours(0, 0, 0, 0) > date.setHours(0, 0, 0, 0)) {
-    return true;
-  }
+  return now.setHours(0, 0, 0, 0) > date.setHours(0, 0, 0, 0);
 };
 
 // This verifies the apiKey and sets the user if it is valid.
@@ -30,7 +28,12 @@ export const verifyApiKey: NextMiddleware = async (req, res, next) => {
 
   if (!req.query.apiKey) return res.status(401).json({ message: "No apiKey provided" });
 
-  const strippedApiKey = `${req.query.apiKey}`.replace(process.env.API_KEY_PREFIX || "cal_", "");
+  const apiKeyString = String(req.query.apiKey);
+  if (apiKeyString.length < 10 || apiKeyString.length > 100) {
+    return res.status(401).json({ error: "Invalid API key format." });
+  }
+
+  const strippedApiKey = apiKeyString.replace(process.env.API_KEY_PREFIX || "cal_", "");
   const hashedKey = hashAPIKey(strippedApiKey);
   const apiKey = await prisma.apiKey.findUnique({
     where: { hashedKey },

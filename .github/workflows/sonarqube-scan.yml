@@ -1,0 +1,35 @@
+name: SonarQube Security Scan
+
+on:
+  workflow_call:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sonarqube-scan:
+    name: SonarQube Security Analysis
+    runs-on: buildjet-4vcpu-ubuntu-2204
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - uses: ./.github/actions/yarn-install
+      
+      - name: Run SonarQube Scan
+        uses: kitabisa/sonarqube-action@v1.2.0
+        with:
+          host: ${{ secrets.SONARQUBE_HOST }}
+          login: ${{ secrets.SONARQUBE_TOKEN }}
+          projectKey: "COG-GTM_sonar_qube"
+          projectName: "COG-GTM/sonar_qube"
+          projectVersion: "1.0"
