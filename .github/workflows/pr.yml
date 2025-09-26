@@ -111,6 +111,13 @@ jobs:
     uses: ./.github/workflows/lint.yml
     secrets: inherit
 
+  sonarqube-scan:
+    name: SonarQube Security Scan
+    needs: [changes, check-label, deps]
+    if: ${{ needs.changes.outputs.has-files-requiring-all-checks == 'true' }}
+    uses: ./.github/workflows/sonarqube-scan.yml
+    secrets: inherit
+
   unit-test:
     name: Tests
     needs: [changes, check-label, deps]
@@ -238,6 +245,7 @@ jobs:
         type-check,
         unit-test,
         integration-test,
+        sonarqube-scan,
         check-label,
         build,
         build-api-v1,

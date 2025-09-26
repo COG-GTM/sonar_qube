@@ -1,0 +1,41 @@
+name: SonarQube Security Scan
+
+on:
+  workflow_call:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sonarqube-scan:
+    name: SonarQube Security Analysis
+    runs-on: buildjet-4vcpu-ubuntu-2204
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - uses: ./.github/actions/yarn-install
+      
+      - name: Run SonarQube Scan
+        uses: sonarqube-quality-gate-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          scanMetadataReportFile: target/sonar/report-task.txt
+          
+      - name: SonarQube Quality Gate Check
+        uses: sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
