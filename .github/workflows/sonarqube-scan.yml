@@ -26,14 +26,10 @@ jobs:
       - uses: ./.github/actions/yarn-install
       
       - name: Run SonarQube Scan
-        uses: sonarqube/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          
-      - name: SonarQube Quality Gate Check
-        uses: sonarqube/sonarqube-quality-gate-action@master
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        uses: kitabisa/sonarqube-action@v1.2.0
+        with:
+          host: ${{ secrets.SONARQUBE_HOST }}
+          login: ${{ secrets.SONARQUBE_TOKEN }}
+          projectKey: "COG-GTM_sonar_qube"
+          projectName: "COG-GTM/sonar_qube"
+          projectVersion: "1.0"
