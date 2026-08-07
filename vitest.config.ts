@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { coverageConfigDefaults, defineConfig } from "vitest/config";
 process.env.INTEGRATION_TEST_MODE = "true";
 
 export default defineConfig({
@@ -7,20 +7,18 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json-summary", "lcov"],
       reportsDirectory: "coverage",
-      // Count untested source files against coverage so packages without any
-      // tests (e.g. packages/app-store) don't look artificially fine.
       all: true,
+      // Without an explicit include, only files imported by a test are reported,
+      // so a package with no tests at all (e.g. packages/app-store) is absent
+      // from the report rather than showing 0%.
       include: ["packages/**/*.{ts,tsx}", "apps/**/*.{ts,tsx}"],
       exclude: [
-        "**/node_modules/**",
+        ...coverageConfigDefaults.exclude,
         "**/.next/**",
         "**/dist/**",
         "**/.turbo/**",
-        "**/*.d.ts",
-        "**/*.{test,spec}.{ts,tsx,js,jsx}",
         "**/*.integration-test.ts",
         "**/*.timezone.test.ts",
-        "**/__tests__/**",
         "**/__mocks__/**",
         "**/test/**",
         "**/tests/**",
@@ -29,6 +27,9 @@ export default defineConfig({
         "**/*.stories.{ts,tsx}",
         "packages/embeds/**",
         "packages/prisma/zod/**",
+        // Has its own test runner (see .github/workflows/unit-tests.yml), so the
+        // root vitest suite never executes it and would report it as 0%.
+        "apps/api/v2/**",
       ],
     },
     passWithNoTests: true,
