@@ -33,9 +33,10 @@ async function seedApp() {
   });
 }
 
-// Each booking gets its own hour: `create` rejects with NoAvailableUsersFound when more
-// than one pending booking shares an eventTypeId/startTime/endTime, so identical windows
-// would make a second seeded booking silently fail the happy path.
+// Each booking gets its own hour so that seeding several in one test stays inert with
+// respect to `create`'s duplicate-timeslot guard. That guard only counts PENDING /
+// AWAITING_HOST rows and the schema default is ACCEPTED, so identical windows would be
+// harmless today -- distinct windows keep it that way if a test ever seeds a pending row.
 async function seedBooking(bookingId: number, overrides: Record<string, unknown> = {}) {
   const hour = bookingId % 24;
   await prismock.booking.create({
