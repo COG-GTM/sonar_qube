@@ -72,6 +72,10 @@ describe("findKeyOfTypeHandler", () => {
       data: { id: 1, teamId, userId, role: MembershipRole.ADMIN, accepted: true },
     });
     await seedApiKey("k1", { userId, teamId });
+    // excluded by the teamId predicate
+    await seedApiKey("k2", { userId, teamId: null });
+    // excluded by the userId predicate
+    await seedApiKey("k3", { userId: 99, teamId });
 
     const ctx = { user: { id: userId } as NonNullable<TrpcSessionUser> };
     const result = await findKeyOfTypeHandler({ ctx, input: { teamId } });
