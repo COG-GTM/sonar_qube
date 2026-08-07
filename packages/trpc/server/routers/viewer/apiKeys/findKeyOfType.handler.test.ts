@@ -40,6 +40,11 @@ describe("findKeyOfTypeHandler", () => {
   });
 
   it("returns an empty array when the caller has no matching keys", async () => {
+    // seeded so the empty result proves the filters excluded these rows, rather than
+    // just reflecting an empty store
+    await seedApiKey("k1", { userId: 42, appId: "make" });
+    await seedApiKey("k2", { userId: 7, appId: "zapier" });
+
     const ctx = { user: { id: 42 } as NonNullable<TrpcSessionUser> };
     await expect(findKeyOfTypeHandler({ ctx, input: { appId: "zapier" } })).resolves.toEqual([]);
   });

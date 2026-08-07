@@ -30,6 +30,18 @@ describe("hasTeamPlanHandler", () => {
     await expect(hasTeamPlanHandler({ ctx })).resolves.toEqual({ hasTeamPlan: false });
   });
 
+  // the handler's team filter is `slug: { not: null }`, so a slug-less team must not count
+  it("returns hasTeamPlan: false for an accepted membership of a team without a slug", async () => {
+    const userId = 3;
+    await prismock.team.create({ data: { id: 30, name: "Team 30", slug: null } });
+    await prismock.membership.create({
+      data: { userId, teamId: 30, accepted: true, role: MembershipRole.MEMBER },
+    });
+
+    const ctx = { user: { id: userId } as NonNullable<TrpcSessionUser> };
+    await expect(hasTeamPlanHandler({ ctx })).resolves.toEqual({ hasTeamPlan: false });
+  });
+
   it("returns hasTeamPlan: false when the user has no memberships", async () => {
     const ctx = { user: { id: 999 } as NonNullable<TrpcSessionUser> };
     await expect(hasTeamPlanHandler({ ctx })).resolves.toEqual({ hasTeamPlan: false });
