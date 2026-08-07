@@ -90,7 +90,7 @@ describe("Paypal PaymentService", () => {
   });
 
   describe("collectCard", () => {
-    it("rejects because only ON_BOOKING is supported (not HOLD)", async () => {
+    it("rejects ON_BOOKING because only HOLD is supported", async () => {
       const service = new PaymentService({ key: validKey });
       await expect(service.collectCard(payment, 1, "ON_BOOKING")).rejects.toThrow(
         "Payment option is not compatible with create method"
