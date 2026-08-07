@@ -74,6 +74,10 @@ describe("Paypal PaymentService", () => {
           success: false,
         })
       );
+
+      // read back so a failed `app: { connect: { slug } }` can't pass as a happy path
+      const stored = await prismock.payment.findFirst({ where: { bookingId } });
+      expect(stored?.externalId).toBe("paypal-order-1");
     });
 
     it("throws PaymentCreationFailure when the booking is missing", async () => {

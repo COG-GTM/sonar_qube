@@ -33,14 +33,18 @@ async function seedApp() {
   });
 }
 
+// Each booking gets its own hour: `create` rejects with NoAvailableUsersFound when more
+// than one pending booking shares an eventTypeId/startTime/endTime, so identical windows
+// would make a second seeded booking silently fail the happy path.
 async function seedBooking(bookingId: number, overrides: Record<string, unknown> = {}) {
+  const hour = bookingId % 24;
   await prismock.booking.create({
     data: {
       id: bookingId,
       uid: `booking-${bookingId}`,
       title: "Paid meeting",
-      startTime: new Date("2030-01-01T10:00:00Z"),
-      endTime: new Date("2030-01-01T11:00:00Z"),
+      startTime: new Date(Date.UTC(2030, 0, 1, hour, 0, 0)),
+      endTime: new Date(Date.UTC(2030, 0, 1, hour + 1, 0, 0)),
       ...overrides,
     },
   });
@@ -87,6 +91,10 @@ describe("HitPay PaymentService", () => {
       );
       // 20.00 * 100
       expect(result.amount).toBe(2000);
+
+      // read back so a failed `app: { connect: { slug } }` can't pass as a happy path
+      const stored = await prismock.payment.findFirst({ where: { bookingId } });
+      expect(stored?.externalId).toBe("hitpay-req-1");
     });
 
     it("cancels the booking and throws when the API key is missing for the environment", async () => {

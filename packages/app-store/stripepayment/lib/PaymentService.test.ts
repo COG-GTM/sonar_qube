@@ -108,6 +108,10 @@ describe("Stripe PaymentService", () => {
       expect(result).toEqual(
         expect.objectContaining({ externalId: "pi_1", amount: payment.amount, success: false })
       );
+
+      // read back so a failed `app: { connect: { slug } }` can't pass as a happy path
+      const stored = await prismock.payment.findFirst({ where: { bookingId } });
+      expect(stored?.externalId).toBe("pi_1");
     });
 
     // `create` funnels every failure into the same generic error, so these two seed a
@@ -145,7 +149,7 @@ describe("Stripe PaymentService", () => {
 
   describe("collectCard", () => {
     it("creates a SetupIntent-backed payment for HOLD", async () => {
-      const bookingId = 402;
+      const bookingId = 404;
       await seedApp();
       await seedBooking(bookingId);
       const service = new PaymentService({ key: validKey });
