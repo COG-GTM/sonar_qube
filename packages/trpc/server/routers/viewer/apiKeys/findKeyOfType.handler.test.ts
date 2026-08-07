@@ -2,6 +2,8 @@ import prismock from "../../../../../../tests/libs/__mocks__/prisma";
 
 import { describe, it, expect } from "vitest";
 
+import { MembershipRole } from "@calcom/prisma/enums";
+
 import { TRPCError } from "@trpc/server";
 
 import type { TrpcSessionUser } from "../../../types";
@@ -42,10 +44,33 @@ describe("findKeyOfTypeHandler", () => {
     await expect(findKeyOfTypeHandler({ ctx, input: { appId: "zapier" } })).resolves.toEqual([]);
   });
 
-  it("throws UNAUTHORIZED when the caller is not an admin/owner of the team", async () => {
-    const ctx = { user: { id: 1 } as NonNullable<TrpcSessionUser> };
-    await expect(findKeyOfTypeHandler({ ctx, input: { teamId: 10 } })).rejects.toSatisfy(
+  it("throws UNAUTHORIZED when the caller is only a MEMBER of the team", async () => {
+    const userId = 1;
+    const teamId = 10;
+    await prismock.team.create({ data: { id: teamId, name: "Team" } });
+    await prismock.membership.create({
+      data: { id: 1, teamId, userId, role: MembershipRole.MEMBER, accepted: true },
+    });
+    await seedApiKey("k1", { userId, teamId });
+
+    const ctx = { user: { id: userId } as NonNullable<TrpcSessionUser> };
+    await expect(findKeyOfTypeHandler({ ctx, input: { teamId } })).rejects.toSatisfy(
       (err) => err instanceof TRPCError && err.code === "UNAUTHORIZED"
     );
+  });
+
+  it("returns the team's keys when the caller is an ADMIN of the team", async () => {
+    const userId = 1;
+    const teamId = 10;
+    await prismock.team.create({ data: { id: teamId, name: "Team" } });
+    await prismock.membership.create({
+      data: { id: 1, teamId, userId, role: MembershipRole.ADMIN, accepted: true },
+    });
+    await seedApiKey("k1", { userId, teamId });
+
+    const ctx = { user: { id: userId } as NonNullable<TrpcSessionUser> };
+    const result = await findKeyOfTypeHandler({ ctx, input: { teamId } });
+
+    expect(result).toEqual([expect.objectContaining({ id: "k1", teamId, userId })]);
   });
 });
