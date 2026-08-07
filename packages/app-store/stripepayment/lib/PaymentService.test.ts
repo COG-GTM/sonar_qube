@@ -110,18 +110,36 @@ describe("Stripe PaymentService", () => {
       );
     });
 
+    // `create` funnels every failure into the same generic error, so these two seed a
+    // usable booking and assert the run bailed before reaching Stripe. Without that,
+    // the assertions would still pass if the guard under test were deleted and the
+    // failure came from the missing booking instead.
     it("throws when payment option is not ON_BOOKING", async () => {
+      const bookingId = 402;
+      await seedApp();
+      await seedBooking(bookingId);
       const service = new PaymentService({ key: validKey });
+
       await expect(
-        service.create(payment, 1, 1, "host", "Booker", "HOLD", "booker@example.com")
+        service.create(payment, bookingId, 1, "host", "Booker", "HOLD", "booker@example.com")
       ).rejects.toThrow("payment_not_created_error");
+
+      expect(retrieveOrCreateStripeCustomerByEmail).not.toHaveBeenCalled();
+      expect(stripeMock.paymentIntents.create).not.toHaveBeenCalled();
     });
 
     it("throws when credentials are invalid", async () => {
+      const bookingId = 403;
+      await seedApp();
+      await seedBooking(bookingId);
       const service = new PaymentService({ key: { foo: "bar" } });
+
       await expect(
-        service.create(payment, 1, 1, "host", "Booker", "ON_BOOKING", "booker@example.com")
+        service.create(payment, bookingId, 1, "host", "Booker", "ON_BOOKING", "booker@example.com")
       ).rejects.toThrow("payment_not_created_error");
+
+      expect(retrieveOrCreateStripeCustomerByEmail).not.toHaveBeenCalled();
+      expect(stripeMock.paymentIntents.create).not.toHaveBeenCalled();
     });
   });
 
