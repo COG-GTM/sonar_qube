@@ -44,6 +44,8 @@ describe("findKeyOfTypeHandler", () => {
 
   it("throws UNAUTHORIZED when the caller is not an admin/owner of the team", async () => {
     const ctx = { user: { id: 1 } as NonNullable<TrpcSessionUser> };
-    await expect(findKeyOfTypeHandler({ ctx, input: { teamId: 10 } })).rejects.toThrow(TRPCError);
+    await expect(findKeyOfTypeHandler({ ctx, input: { teamId: 10 } })).rejects.toSatisfy(
+      (err) => err instanceof TRPCError && err.code === "UNAUTHORIZED"
+    );
   });
 });

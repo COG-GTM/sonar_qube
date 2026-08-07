@@ -39,6 +39,8 @@ describe("getTeamsHandler", () => {
       } as unknown as NonNullable<TrpcSessionUser>,
     };
 
-    await expect(getTeamsHandler({ ctx })).rejects.toThrow(TRPCError);
+    await expect(getTeamsHandler({ ctx })).rejects.toSatisfy(
+      (err) => err instanceof TRPCError && err.code === "UNAUTHORIZED"
+    );
   });
 });
