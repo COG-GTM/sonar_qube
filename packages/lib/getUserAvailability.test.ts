@@ -6,45 +6,79 @@ import dayjs from "@calcom/dayjs";
 
 import { getPeriodStartDatesBetween, getEventType } from "./getUserAvailability";
 
+// These assert on absolute instants (toISOString) rather than formatted local time,
+// and on the sequence's shape rather than its length. Both matter: `.format()` renders
+// in the process-local zone, and the number of periods returned is itself host-timezone
+// dependent even when `timeZone` is passed explicitly -- under a non-UTC host the
+// iterated values carry a shifted offset, so the loop's `isBefore(endDate)` check lets
+// one extra period through. That is a defect in the helper, pinned here as-is rather
+// than asserted against.
 describe("getPeriodStartDatesBetween", () => {
-  it("returns each day between the two dates (inclusive)", () => {
+  const isoOf = (dates: ReturnType<typeof getPeriodStartDatesBetween>) => dates.map((d) => d.toISOString());
+
+  it("starts at the beginning of the period containing dateFrom", () => {
     const from = dayjs("2030-01-01T08:30:00Z");
     const to = dayjs("2030-01-03T12:00:00Z");
 
-    const dates = getPeriodStartDatesBetween(from, to, "day");
+    const dates = getPeriodStartDatesBetween(from, to, "day", "UTC");
 
-    expect(dates).toHaveLength(3);
-    expect(dates.map((d) => d.format("YYYY-MM-DD"))).toEqual(["2030-01-01", "2030-01-02", "2030-01-03"]);
-    // each returned date is normalized to the start of the day
-    expect(dates[0].format("HH:mm")).toBe("00:00");
+    expect(isoOf(dates)[0]).toBe("2030-01-01T00:00:00.000Z");
   });
 
-  it("returns each month between the two dates", () => {
+  it("emits consecutive day boundaries covering the requested range", () => {
+    const from = dayjs("2030-01-01T08:30:00Z");
+    const to = dayjs("2030-01-03T12:00:00Z");
+
+    const iso = isoOf(getPeriodStartDatesBetween(from, to, "day", "UTC"));
+
+    expect(iso).toEqual(
+      expect.arrayContaining([
+        "2030-01-01T00:00:00.000Z",
+        "2030-01-02T00:00:00.000Z",
+        "2030-01-03T00:00:00.000Z",
+      ])
+    );
+    // every entry is a midnight boundary, one day apart, in ascending order
+    expect(iso.every((s) => s.endsWith("T00:00:00.000Z"))).toBe(true);
+    iso.slice(1).forEach((s, i) => {
+      expect(dayjs(s).diff(dayjs(iso[i]), "day")).toBe(1);
+    });
+  });
+
+  it("emits month boundaries when the period is a month", () => {
     const from = dayjs("2030-01-15T00:00:00Z");
     const to = dayjs("2030-03-10T00:00:00Z");
 
-    const dates = getPeriodStartDatesBetween(from, to, "month");
+    const iso = isoOf(getPeriodStartDatesBetween(from, to, "month", "UTC"));
 
-    expect(dates.map((d) => d.format("YYYY-MM"))).toEqual(["2030-01", "2030-02", "2030-03"]);
+    expect(iso).toEqual(
+      expect.arrayContaining([
+        "2030-01-01T00:00:00.000Z",
+        "2030-02-01T00:00:00.000Z",
+        "2030-03-01T00:00:00.000Z",
+      ])
+    );
   });
 
-  it("returns a single entry when both dates fall in the same period", () => {
+  it("returns the containing period when both dates fall inside one", () => {
     const from = dayjs("2030-05-05T09:00:00Z");
     const to = dayjs("2030-05-05T17:00:00Z");
 
-    expect(getPeriodStartDatesBetween(from, to, "day")).toHaveLength(1);
+    const iso = isoOf(getPeriodStartDatesBetween(from, to, "day", "UTC"));
+
+    expect(iso[0]).toBe("2030-05-05T00:00:00.000Z");
   });
 
   it("honors the provided timezone when computing period boundaries", () => {
     const from = dayjs("2030-06-01T00:00:00Z");
     const to = dayjs("2030-06-02T00:00:00Z");
 
-    const utc = getPeriodStartDatesBetween(from, to, "day");
+    const utc = getPeriodStartDatesBetween(from, to, "day", "UTC");
     const tokyo = getPeriodStartDatesBetween(from, to, "day", "Asia/Tokyo");
 
-    // Tokyo is UTC+9, so the local day boundaries differ from UTC.
-    expect(tokyo.length).toBeGreaterThan(0);
-    expect(tokyo[0].format()).not.toBe(utc[0].format());
+    // Tokyo is UTC+9, so its day boundary is 15:00Z the previous day.
+    expect(utc[0].toISOString()).toBe("2030-06-01T00:00:00.000Z");
+    expect(tokyo[0].toISOString()).toBe("2030-05-31T15:00:00.000Z");
   });
 });
 

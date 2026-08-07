@@ -45,6 +45,8 @@ describe("EventManager pure helpers", () => {
     it("merges conference data for an integration location", () => {
       const event = { title: "Test", location: DailyLocationType } as CalendarEvent;
       const processed = processLocation(event);
+      // the event is merged in place and returned by reference
+      expect(processed).toBe(event);
       expect(processed.location).toBe(DailyLocationType);
       // @ts-expect-error conferenceData is merged onto the event
       expect(processed.conferenceData?.createRequest?.requestId).toBeTypeOf("string");
