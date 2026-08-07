@@ -48,7 +48,6 @@ describe("EventManager pure helpers", () => {
       // the event is merged in place and returned by reference
       expect(processed).toBe(event);
       expect(processed.location).toBe(DailyLocationType);
-      // @ts-expect-error conferenceData is merged onto the event
       expect(processed.conferenceData?.createRequest?.requestId).toBeTypeOf("string");
     });
 
@@ -56,7 +55,6 @@ describe("EventManager pure helpers", () => {
       const event = { title: "Test", location: "In person" } as CalendarEvent;
       const processed = processLocation(event);
       expect(processed.location).toBe("In person");
-      // @ts-expect-error conferenceData should not have been added
       expect(processed.conferenceData).toBeUndefined();
     });
   });
