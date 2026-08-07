@@ -104,8 +104,16 @@ describe("HitPay PaymentService", () => {
 
     it("throws PaymentCreationFailure when the booking does not exist", async () => {
       await seedApp();
+      const bookingId = 303;
+      await seedBooking(bookingId);
       const service = new PaymentService({ key: validKey });
+
       await expect(callCreate(service, 999)).rejects.toThrow(ErrorCode.PaymentCreationFailure);
+
+      // the error-path booking.update must not touch an unrelated booking
+      const untouched = await prismock.booking.findUnique({ where: { id: bookingId } });
+      expect(untouched?.status).not.toBe("CANCELLED");
+      expect(await prismock.payment.findFirst({ where: { bookingId: 999 } })).toBeNull();
     });
   });
 

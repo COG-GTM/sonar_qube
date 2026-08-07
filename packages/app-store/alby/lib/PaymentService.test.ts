@@ -73,6 +73,8 @@ describe("Alby PaymentService", () => {
       const result = await service.create(payment, bookingId);
 
       expect(fetchLightningAddress).toHaveBeenCalledOnce();
+      // Characterization, not a validated contract: the source forwards the fiat minor-unit
+      // amount straight through as a satoshi count with no conversion.
       expect(requestInvoice).toHaveBeenCalledWith(expect.objectContaining({ satoshi: payment.amount }));
       expect(result).toEqual(
         expect.objectContaining({
@@ -93,7 +95,10 @@ describe("Alby PaymentService", () => {
       await expect(service.create(payment, 999)).rejects.toThrow(ErrorCode.PaymentCreationFailure);
     });
 
-    it("throws PaymentCreationFailure when credentials are missing the lightning address", async () => {
+    // `account_lightning_address` is required by albyCredentialKeysSchema, so credentials
+    // that lack it fail parsing wholesale: this exercises the null-credentials half of the
+    // `!booking || !this.credentials?.account_lightning_address` guard.
+    it("throws PaymentCreationFailure when the credentials fail schema parsing", async () => {
       const bookingId = 102;
       await seedBookingAndApp(bookingId);
       const service = new PaymentService({ key: { foo: "bar" } });
